@@ -1,11 +1,8 @@
-from flask import Flask
-from flask import request
-from flask import send_file
+from flask import Flask, request, send_file
 import random
 import requests
 import queue
 import io
-import uuid
 import cloudpickle as pickle
 
 from common import executor
