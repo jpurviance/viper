@@ -8,11 +8,23 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import pygraphviz
 
 
+def merge_dicts(*dict_args):
+    """
+    Given any number of dicts, shallow copy and merge into a new dict,
+    precedence goes to key value pairs in latter dicts.
+    """
+    result = {}
+    for dictionary in [x for x in dict_args if isinstance(x, dict)]:
+        result.update(dictionary)
+    return result
+
+
 class Task(object):
     def __init__(self, name, func):
         self.name = name
         self.func = func
         self.downstream = ()
+        self.result = None
 
     def __lshift__(self, other):
         self._shift(other, self)
@@ -57,6 +69,19 @@ class Task(object):
         requests.post(urllib.parse.urljoin("http://" + host, "/endpoint.html"),
                       data=dump)
 
+    def run_debug(self, args=None, kwargs=None):
+        graph = self.make_graph()
+        unsatisfied = list(graph.nodes())
+        completed = []
+        while unsatisfied:
+            satisfied = [node for node in unsatisfied
+                         if all(x in completed for x in graph.predecessors(node))]
+            unsatisfied = [x for x in unsatisfied if x not in satisfied]
+            for node in satisfied:
+                preds = graph.predecessors(node)
+                res = node.func(merge_dicts((pred.result for pred in preds)))
+                node.result = res
+            completed.extend(satisfied)
 
 if __name__ == "__main__":
     task1 = Task("task1", lambda x: print("HELLO1"))
@@ -65,5 +90,6 @@ if __name__ == "__main__":
     task4 = Task("task4", lambda x: print("HELLO4"))
 
     task1 >> task2 >> task3 << task4 << task1
-    #import IPython;IPython.embed()
-    task1.render_graph()
+    # import IPython;IPython.embed()
+    task1.run_debug()
+    # task1.render_graph()
