@@ -10,7 +10,7 @@ def execute(graph, args, kwargs):
         unsatisfied = [x for x in unsatisfied if x not in satisfied]
         for node in satisfied:
             preds = graph.predecessors(node)
-            res = node.func(merge_dicts((pred.result for pred in preds)))
+            res = node.func(**merge_dicts(*([pred.result for pred in preds]+[kwargs])))
             node.result = res
         completed.extend(satisfied)
-    return {x.name: x.result for x in completed if len(list(graph.successors(x)))==0}
+    return {x.name: x.result for x in completed if len(list(graph.successors(x))) == 0}

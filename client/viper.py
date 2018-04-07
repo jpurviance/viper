@@ -8,6 +8,7 @@ from networkx.drawing.nx_agraph import graphviz_layout
 import pygraphviz
 
 from common.utils import merge_dicts
+from common import executor
 
 
 class Task(object):
@@ -63,20 +64,13 @@ class Task(object):
 
     def run_debug(self, args=None, kwargs=None):
         graph = self.make_graph()
-        unsatisfied = list(graph.nodes())
-        completed = []
-        while unsatisfied:
-            satisfied = [node for node in unsatisfied
-                         if all(x in completed for x in graph.predecessors(node))]
-            unsatisfied = [x for x in unsatisfied if x not in satisfied]
-            for node in satisfied:
-                preds = graph.predecessors(node)
-                res = node.func(merge_dicts((pred.result for pred in preds)))
-                node.result = res
-            completed.extend(satisfied)
+        return executor.execute(graph, args, kwargs)
+
 
 def func(*args, **kwargs):
     return "HELLO"
+
+
 if __name__ == "__main__":
     task1 = Task("task1", func)
     task2 = Task("task2", lambda x: print("HELLO2"))
