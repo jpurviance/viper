@@ -1,15 +1,23 @@
 from flask import Flask
 from flask import request
+from flask import send_file
 import random
 import requests
 import queue
+import io
+import uuid
+import cloudpickle as pickle
+
+from common import executor
 
 app = Flask(__name__)
 
 workers = dict()
+
 available = set()
 
 work_queue = queue.Queue()
+
 
 class Worker:
     def __init__(self, name, url, port):
@@ -19,11 +27,6 @@ class Worker:
 
     def __repr__(self):
         return "name: {}, url: {}, port: {}".format(self.name, self.url, self.port)
-
-
-@app.route('/')
-def hello_world():
-    return "{}".format(workers)
 
 
 @app.route("/register", methods=["POST"])
@@ -59,6 +62,15 @@ def run_me():
     if len(available) != 0:
         dispatch_work(*work_queue.get())
     return ""
+
+
+@app.route("/submit", methods=["POST"])
+def submit_task():
+    print("/submit accessed")
+    data = request.data
+    graph, args, kwargs = pickle.loads(data)
+    result = executor.execute(graph, args, kwargs)
+    return send_file(io.BytesIO(pickle.dumps(result, -1)), mimetype="text")
 
 
 if __name__ == '__main__':
