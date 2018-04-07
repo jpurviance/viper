@@ -11,16 +11,27 @@ app = Flask(__name__)
 workers = dict()
 tasks = dict()
 
+class Worker:
+
+    def __init__(self, name, url, port):
+        self.name = name,
+        self.url = url
+        self.port = port
+
+    def __repr__(self):
+        return "name: {}, url: {}, port: {}".format(self.name, self.url, self.port)
+
+
 @app.route('/')
 def hello_world():
-    return workers
+    return "{}".format(workers)
 
 
-@app.route("/register")
+@app.route("/register", methods=["POST"])
 def register():
-    server_name = request.args.get("name")
-    server_address = request.args.get("location")
-    workers[server_name] = server_address
+    worker = Worker(request.form.get("name"), request.form.get("location"), request.form.get("port"))
+    workers[request.form.get("name")] = worker
+    return "bam!"
 
 
 @app.route("/submit", methods=["POST"])
