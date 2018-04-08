@@ -1,7 +1,5 @@
 {
   "my_url": "localhost",
-  "my_port": 5000,
-  "my_name": "1",
   "foreman_url": "localhost",
   "foreman_port": 8000
 }

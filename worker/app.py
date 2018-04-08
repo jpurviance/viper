@@ -4,9 +4,12 @@ import _thread
 import time
 import requests
 import cloudpickle as pickle
+import os
 
 f = open("config.json")
 config = json.load(f)
+config["my_port"] = os.environ.get("port", 5000)
+config["my_name"] = os.environ.get("name", "default")
 f.close()
 requests.post("http://{}:{}/register".format(config["foreman_url"], config["foreman_port"]),
               data={"location": config["my_url"], "port": config["my_port"], "name": config["my_name"]})
