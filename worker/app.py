@@ -18,7 +18,7 @@ app = Flask(__name__)
 
 
 def do_work(node, kwargs):
-    print("started do work")
+    print("executing {}".format(node.name))
     start_time = time.time()
     result = node.func(**kwargs)
     node.result = result
@@ -26,7 +26,7 @@ def do_work(node, kwargs):
     node.total_time = total_time
     requests.post("http://{}:{}/completed".format(config["foreman_url"], config["foreman_port"]),
                   data=pickle.dumps((node, result, total_time, config["my_name"])))
-    print("work done")
+    print("finished {}".format(node.name))
 
 
 def sleep(args):

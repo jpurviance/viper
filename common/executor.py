@@ -18,6 +18,9 @@ class Executor(object):
         self.unsatisfied = [x for x in self.unsatisfied if x not in satisfied]
         for node in satisfied:
             preds = self.graph.predecessors(node)
+            for pred in preds:
+                print("task: {}, predecessor: {}, result: {}".format(node.name, pred.name, pred.result))
+            preds = self.graph.predecessors(node)
             node_kwargs = merge_dicts(*([pred.result for pred in preds] + [self.kwargs]))
             node.job_id = self.job_id
             yield (node, node_kwargs)

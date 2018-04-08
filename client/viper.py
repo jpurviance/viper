@@ -62,7 +62,7 @@ class Task(object):
                       data=dump)
         return r.content
 
-    def run_debug(self, args=None, kwargs=None):
+    def run_debug(self, host, args=None, kwargs=None):
         graph = self.make_graph()
         return executor.execute(graph, args, kwargs)
 
