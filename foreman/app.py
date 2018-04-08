@@ -28,6 +28,8 @@ class Worker:
     def __repr__(self):
         return "<Worker name: {}, url: {}, port: {}>".format(self.name, self.url, self.port)
 
+    def __str__(self):
+        return self.__repr__()
 
 @app.route("/register", methods=["POST"])
 def register():
