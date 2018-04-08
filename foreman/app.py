@@ -31,6 +31,7 @@ class Worker:
     def __str__(self):
         return self.__repr__()
 
+
 @app.route("/register", methods=["POST"])
 def register():
     worker = Worker(request.form.get("name"), request.form.get("location"), request.form.get("port"))
@@ -99,7 +100,7 @@ def submit_task():
 
 @app.route("/hello_world")
 def hello():
-    return "{}".format(workers)
+    return str(workers)
 
 
 @app.route("/submit_debug", methods=["POST"])
