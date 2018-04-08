@@ -16,5 +16,5 @@ add_task = viper.Task("add_task", add_1)
 invert_task = viper.Task("invert_task", invert)
 times_task >> add_task
 times_task >> invert_task
-res = times_task.run_debug(None, {"number": 100})
+res = times_task.run("localhost:8000", None, {"number": 100})
 print(res)

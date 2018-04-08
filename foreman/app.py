@@ -89,6 +89,11 @@ def submit_task():
     return job_id
 
 
+@app.route("/hello_world")
+def hello():
+    return "Hello World"
+
+
 @app.route("/submit_debug", methods=["POST"])
 def submit_task_debug():
     graph, args, kwargs = pickle.loads(request.data)
