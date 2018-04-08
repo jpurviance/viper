@@ -71,10 +71,17 @@ def func(number=None, *args, **kwargs):
     time.sleep(2)
     return {"number": number + 1}
 
+
 def get_job_status(host, job_id):
     r = requests.post(urllib.parse.urljoin("http://" + host, "/job_status"),
                       data={"job_id": job_id})
     return r.content
+
+
+def get_job_results(host, job_id):
+    r = requests.post(urllib.parse.urljoin("http://" + host, "/job_results"),
+                      data={"job_id": job_id})
+    return pickle.loads(r.content)
 
 
 if __name__ == "__main__":

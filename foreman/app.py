@@ -76,6 +76,12 @@ def job_status():
     return executors[job_id].get_status()
 
 
+@app.route("/job_results", methods=["POST"])
+def job_results():
+    job_id = request.form.get("job_id")
+    return pickle.dumps(executors[job_id].get_results())
+
+
 @app.route("/submit", methods=["POST"])
 def submit_task():
     graph, args, kwargs = pickle.loads(request.data)
