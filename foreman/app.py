@@ -91,7 +91,7 @@ def submit_task():
 
 @app.route("/hello_world")
 def hello():
-    return str(workers)
+    return "{}".format(workers)
 
 
 @app.route("/submit_debug", methods=["POST"])
