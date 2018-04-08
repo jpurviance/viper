@@ -3,6 +3,7 @@ import random
 import requests
 import queue
 import io
+import uuid
 import cloudpickle as pickle
 
 from common import executor
@@ -48,7 +49,6 @@ def dispatch_work(task, args):
 
 @app.route("/completed", methods=["POST"])
 def completed():
-    import pdb; pdb.set_trace()
     node, result, total_time, worker_id = pickle.loads(request.data)
     exec = executors[node.job_id]
     node.result = result

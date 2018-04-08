@@ -2,10 +2,9 @@ import networkx as nx
 import cloudpickle as pickle
 import requests
 import urllib.parse
-import pylab as plt
 from networkx.drawing.nx_agraph import graphviz_layout
-import pygraphviz
 import json
+import time
 
 from common import executor
 
@@ -53,7 +52,7 @@ class Task(object):
                 node_color=range(len(G)),
                 prog='dot')
         nx.draw_networkx_labels(G, layout, {x: x.name for x in G.nodes()})
-        plt.show()
+        #plt.show()
         # Viewer(self.make_graph()).mainloop()
 
     def run(self, host, args, kwargs):
@@ -69,6 +68,7 @@ class Task(object):
 
 
 def func(number=None, *args, **kwargs):
+    time.sleep(2)
     return {"number": number + 1}
 
 def get_job_status(host, job_id):
@@ -86,6 +86,14 @@ if __name__ == "__main__":
     task1 >> task2 >> task3 << task4 << task1
     # import IPython;IPython.embed()
     job_id = task1.run("localhost:8000", None, {"number": 0})
-    print(get_job_status("localhost:8000", job_id))
+    while True:
+        job_status = get_job_status("localhost:8000", job_id)
+        print(job_status.decode('ascii'))
+        if all(x['status'] == "completed" for x in json.loads(job_status)):
+            break
+        time.sleep(1)
+
+
+
 
     # task1.render_graph()
