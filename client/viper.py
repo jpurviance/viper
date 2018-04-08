@@ -1,13 +1,12 @@
 import networkx as nx
-from networkx_viewer import Viewer
 import cloudpickle as pickle
 import requests
 import urllib.parse
 import pylab as plt
 from networkx.drawing.nx_agraph import graphviz_layout
 import pygraphviz
+import json
 
-from common.utils import merge_dicts
 from common import executor
 
 
@@ -17,6 +16,8 @@ class Task(object):
         self.func = func
         self.downstream = ()
         self.result = None
+        self.job_id = None
+        self.total_time = None
 
     def __lshift__(self, other):
         self._shift(other, self)
@@ -60,24 +61,31 @@ class Task(object):
         dump = pickle.dumps((graph, args, kwargs), -1)
         r = requests.post(urllib.parse.urljoin("http://" + host, "/submit"),
                       data=dump)
-        return pickle.loads(r.content)
+        return r.content
 
     def run_debug(self, args=None, kwargs=None):
         graph = self.make_graph()
         return executor.execute(graph, args, kwargs)
 
 
-def func(*args, **kwargs):
-    return "HELLO"
+def func(number=None, *args, **kwargs):
+    return {"number": number + 1}
+
+def get_job_status(host, job_id):
+    r = requests.post(urllib.parse.urljoin("http://" + host, "/job_status"),
+                      data={"job_id": job_id})
+    return r.content
 
 
 if __name__ == "__main__":
     task1 = Task("task1", func)
-    task2 = Task("task2", lambda x: print("HELLO2"))
-    task3 = Task("task3", lambda x: print("HELLO3"))
-    task4 = Task("task4", lambda x: print("HELLO4"))
+    task2 = Task("task2", func)
+    task3 = Task("task3", func)
+    task4 = Task("task4", func)
 
     task1 >> task2 >> task3 << task4 << task1
     # import IPython;IPython.embed()
-    print(task1.run("localhost:8000", None, None))
+    job_id = task1.run("localhost:8000", None, {"number": 0})
+    print(get_job_status("localhost:8000", job_id))
+
     # task1.render_graph()

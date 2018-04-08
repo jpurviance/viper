@@ -18,6 +18,8 @@ available = set()
 
 work_queue = queue.Queue()
 
+executors = {}
+
 
 class Worker:
     def __init__(self, name, url, port):
@@ -26,7 +28,7 @@ class Worker:
         self.port = port
 
     def __repr__(self):
-        return "name: {}, url: {}, port: {}".format(self.name, self.url, self.port)
+        return "<Worker name: {}, url: {}, port: {}>".format(self.name, self.url, self.port)
 
 
 @app.route("/register", methods=["POST"])
@@ -43,15 +45,22 @@ def dispatch_work(task, args):
     run_on = random.choice(list(available))
     available.remove(run_on)
     run_on_worker = workers[run_on]
-    requests.post("http://{}:{}/execute".format(run_on_worker.url, run_on_worker.port))
+    requests.post("http://{}:{}/execute".format(run_on_worker.url, run_on_worker.port),
+                  data=pickle.dumps((task, args)))
 
 
 @app.route("/completed", methods=["POST"])
 def completed():
-    worker_id = request.form.get("name")
+    import pdb; pdb.set_trace()
+    node, result, total_time, worker_id = pickle.loads(request.data)
+    exec = executors[node.job_id]
+    node.result = result
+    node.total_time = total_time
+    for item in exec.step(node):
+        work_queue.put(item)
     worker = workers[worker_id]
-    available.add(worker)
-    if not work_queue.empty():
+    available.add(worker_id)
+    while available and not work_queue.empty():
         dispatch_work(*work_queue.get())
     return ""
 
@@ -64,11 +73,28 @@ def run_me():
     return ""
 
 
+@app.route("/job_status", methods=["POST"])
+def job_status():
+    job_id = request.form.get("job_id")
+    return executors[job_id].get_status()
+
+
 @app.route("/submit", methods=["POST"])
 def submit_task():
-    print("/submit accessed")
-    data = request.data
-    graph, args, kwargs = pickle.loads(data)
+    graph, args, kwargs = pickle.loads(request.data)
+    job_id = str(uuid.uuid4())
+    exec = executor.Executor(graph, args, kwargs, job_id)
+    for item in exec.step({}):
+        work_queue.put(item)
+    executors[job_id] = exec
+    while available and not work_queue.empty():
+        dispatch_work(*work_queue.get())
+    return job_id
+
+
+@app.route("/submit_debug", methods=["POST"])
+def submit_task_debug():
+    graph, args, kwargs = pickle.loads(request.data)
     result = executor.execute(graph, args, kwargs)
     return send_file(io.BytesIO(pickle.dumps(result, -1)), mimetype="text")
 
