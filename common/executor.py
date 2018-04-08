@@ -23,6 +23,10 @@ class Executor(object):
             yield (node, node_kwargs)
         self.completed.extend(satisfied)
 
+    def get_results(self):
+        return {x.name: x.result for x in self.graph.nodes()
+                if len(list(self.graph.successors(x))) == 0}
+
     def update_results(self, node):
         for item in self.completed:
             if item.name == node.name:
